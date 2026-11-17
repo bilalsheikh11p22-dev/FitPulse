@@ -80,9 +80,21 @@ const generalLimiter = rateLimit({
   skip: () => process.env.NODE_ENV === 'test',
 });
 
-// ── Health Check ──────────────────────────────────────────────────────────────
+// ── Root Route ────────────────────────────────────
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    message: 'FitPulse Backend is running',
+    health: '/api/health'
+  });
+});
+
+// ── Health Check ─────────────────────────────────
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'FitPulse API is operating smoothly' });
+  res.status(200).json({
+    status: 'OK',
+    message: 'FitPulse API is operating smoothly'
+  });
 });
 
 // ── Routes ────────────────────────────────────────────────────────────────────
