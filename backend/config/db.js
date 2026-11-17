@@ -1,24 +1,41 @@
+
 const mongoose = require('mongoose');
 
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/fitness_tracker_db');
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+let connectionPromise = null;
 
-    // Existing accounts that were given the old stock default picture are reset to "no picture"
-    // so they show initials like new accounts do. Safe to run repeatedly.
-    try {
-      const User = require('../models/User');
-      const { LEGACY_DEFAULT_AVATARS } = require('../utils/helpers');
-      const r = await User.updateMany({ avatar: { $in: LEGACY_DEFAULT_AVATARS } }, { $set: { avatar: '' } });
-      if (r.modifiedCount) console.log(`Cleared legacy default avatar on ${r.modifiedCount} account(s)`);
-    } catch (e) {
-      console.warn('[DB] Legacy avatar cleanup skipped:', e.message);
-    }
-  } catch (error) {
-    console.error(`Error connecting to MongoDB: ${error.message}`);
-    process.exit(1);
+const connectDB = async () => {
+  // Reuse an existing connection
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
   }
+
+  // Wait for an existing connection attempt
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
+  const mongoURI = process.env.MONGO_URI;
+
+  if (!mongoURI) {
+    throw new Error('MONGO_URI is missing from environment variables.');
+  }
+
+  connectionPromise = mongoose
+    .connect(mongoURI, {
+      serverSelectionTimeoutMS: 10000,
+    })
+    .then(async (conn) => {
+      console.log(`MongoDB Connected: ${conn.connection.host}`);
+
+      return conn.connection;
+    })
+    .catch((error) => {
+      connectionPromise = null;
+      console.error('MongoDB connection failed:', error.message);
+      throw error;
+    });
+
+  return connectionPromise;
 };
 
 module.exports = connectDB;

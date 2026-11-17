@@ -1,6 +1,14 @@
+
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+// Production uses the deployed backend.
+// Development uses the local backend.
+const API_BASE_URL = import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? 'https://pulsefit-5wbi.vercel.app/api'
+    : 'http://localhost:5001/api');
+
+console.log('[FitPulse API] Using:', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -19,31 +27,47 @@ export const readStoredUser = () => {
   }
 };
 
-// Intercept requests to add JWT token from localStorage
+// Add JWT token to requests
 api.interceptors.request.use(
   (config) => {
     const parsed = readStoredUser();
+
     if (parsed?.token) {
       config.headers.Authorization = `Bearer ${parsed.token}`;
     }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// An expired / invalid token (401) or a deactivated account (403 on a token-bearing request)
-// ends the session. Login/register failures are left alone so the form can show the message.
+// Handle expired or deactivated sessions
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
     const url = error.config?.url || '';
-    const isAuthForm = url.includes('/auth/login') || url.includes('/auth/register');
-    const hadToken = Boolean(error.config?.headers?.Authorization);
-    const deactivated = status === 403 && /deactivated/i.test(error.response?.data?.message || '');
+
+    const isAuthForm =
+      url.includes('/auth/login') ||
+      url.includes('/auth/register');
+
+    const hadToken = Boolean(
+      error.config?.headers?.Authorization
+    );
+
+    const deactivated =
+      status === 403 &&
+      /deactivated/i.test(
+        error.response?.data?.message || ''
+      );
+
     if (!isAuthForm && hadToken && (status === 401 || deactivated)) {
-      window.dispatchEvent(new CustomEvent('fitpulse:unauthorized'));
+      window.dispatchEvent(
+        new CustomEvent('fitpulse:unauthorized')
+      );
     }
+
     return Promise.reject(error);
   }
 );
