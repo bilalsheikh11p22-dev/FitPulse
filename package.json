@@ -7,8 +7,8 @@
     "node": "22.x"
   },
   "scripts": {
-    "build": "npm --prefix frontend install && npm --prefix frontend run build",
-    "dev:backend": "npm --prefix backend run dev",
+   "build": "npm --prefix frontend install --include=dev && npm --prefix frontend run build",
+    "dev:backend": "npm --prefi x backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "seed": "npm --prefix backend run seed"
   },
