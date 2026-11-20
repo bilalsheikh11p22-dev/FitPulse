@@ -34,3 +34,6 @@ Thumbs.db
 
 # Uploads (user-generated content — not for version control)
 backend/uploads/
+
+# Vercel
+.vercel/

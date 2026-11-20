@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Scale, Trash2 } from 'lucide-react';
 import api from '../../api/api';
 import { toArray, getErrorMessage, fmtDate } from '../../utils/normalize';
+import { PageHeader, Card, Alert, Spinner, EmptyState, DataTable, tdCls, iconBtn } from '../../components/admin/ui';
 
 export default function AdminProgress() {
   const [logs, setLogs] = useState([]);
@@ -36,93 +37,68 @@ export default function AdminProgress() {
     }
   };
 
+  const kg = (v) => (v ? `${v} kg` : '—');
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2.5">
-          <Scale className="w-6 h-6 text-cyan-400" />
-          <span>User Biometric & Progress Monitoring</span>
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Review weight trajectories, body circumferences, and 1RM personal records across all platform athletes.
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        icon={Scale}
+        title="Progress"
+        description="Weight, body measurements and personal-record check-ins from all users."
+      />
 
-      {error && (
-        <div role="alert" className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-          {error}
-        </div>
-      )}
+      <div className="space-y-4">
+        {error && <Alert>{error}</Alert>}
 
-      {/* Progress Table */}
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
-        {loading ? (
-          <div className="py-20 text-center">
-            <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-xs text-slate-400">Loading progress records...</p>
-          </div>
-        ) : logs.length === 0 ? (
-          <div className="p-12 text-center text-xs text-slate-400">
-            No progress entries recorded yet.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px]">
-                <tr>
-                  <th className="px-4 py-3 rounded-l-lg">Athlete</th>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Weight</th>
-                  <th className="px-4 py-3">Waist</th>
-                  <th className="px-4 py-3">Bench Press</th>
-                  <th className="px-4 py-3">Squats</th>
-                  <th className="px-4 py-3">Deadlift</th>
-                  <th className="px-4 py-3">Notes</th>
-                  <th className="px-4 py-3 rounded-r-lg text-right">Action</th>
+        <Card padded={false} title={loading ? 'Check-ins' : `Check-ins (${logs.length})`} icon={Scale}>
+          {loading ? (
+            <Spinner label="Loading progress records…" />
+          ) : logs.length === 0 ? (
+            <EmptyState icon={Scale} title="No progress entries yet" description="Check-ins will appear here as users log them." />
+          ) : (
+            <DataTable
+              columns={[
+                { label: 'Athlete' },
+                { label: 'Date' },
+                { label: 'Weight' },
+                { label: 'Waist' },
+                { label: 'Bench' },
+                { label: 'Squat' },
+                { label: 'Deadlift' },
+                { label: 'Notes' },
+                { label: '', align: 'right' },
+              ]}
+            >
+              {logs.map((log) => (
+                <tr key={log._id} className="hover:bg-slate-800/40 transition-colors">
+                  <td className={tdCls}>
+                    <p className="font-medium text-white">{log.user?.name || 'Athlete'}</p>
+                    <p className="text-xs text-slate-500">@{log.user?.username}</p>
+                  </td>
+                  <td className={`${tdCls} text-slate-400 whitespace-nowrap`}>{fmtDate(log.date)}</td>
+                  <td className={`${tdCls} text-white font-semibold tabular-nums whitespace-nowrap`}>{log.weight} kg</td>
+                  <td className={`${tdCls} text-slate-300 tabular-nums whitespace-nowrap`}>
+                    {log.bodyMeasurements?.waist ? `${log.bodyMeasurements.waist} cm` : '—'}
+                  </td>
+                  <td className={`${tdCls} text-slate-300 tabular-nums whitespace-nowrap`}>{kg(log.performanceMetrics?.benchPressMax)}</td>
+                  <td className={`${tdCls} text-slate-300 tabular-nums whitespace-nowrap`}>{kg(log.performanceMetrics?.squatMax)}</td>
+                  <td className={`${tdCls} text-slate-300 tabular-nums whitespace-nowrap`}>{kg(log.performanceMetrics?.deadliftMax)}</td>
+                  <td className={`${tdCls} text-slate-400 max-w-[220px] truncate`} title={log.notes || ''}>{log.notes || '—'}</td>
+                  <td className={`${tdCls} text-right`}>
+                    <button
+                      onClick={() => handleDelete(log._id)}
+                      className={`${iconBtn} hover:!text-red-400 hover:!bg-red-500/10`}
+                      title="Delete check-in"
+                      aria-label="Delete check-in"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/80">
-                {logs.map((log) => (
-                  <tr key={log._id} className="hover:bg-slate-800/40 transition">
-                    <td className="px-4 py-3 font-semibold text-white">
-                      {log.user?.name || 'Athlete'}
-                      <span className="block text-[10px] text-slate-500 font-normal">@{log.user?.username}</span>
-                    </td>
-                    <td className="px-4 py-3 text-slate-400">
-                      {fmtDate(log.date)}
-                    </td>
-                    <td className="px-4 py-3 text-cyan-400 font-bold">{log.weight} kg</td>
-                    <td className="px-4 py-3 text-slate-300">
-                      {log.bodyMeasurements?.waist ? `${log.bodyMeasurements.waist} cm` : '--'}
-                    </td>
-                    <td className="px-4 py-3 text-brand-400 font-semibold">
-                      {log.performanceMetrics?.benchPressMax ? `${log.performanceMetrics.benchPressMax} kg` : '--'}
-                    </td>
-                    <td className="px-4 py-3 text-purple-400 font-semibold">
-                      {log.performanceMetrics?.squatMax ? `${log.performanceMetrics.squatMax} kg` : '--'}
-                    </td>
-                    <td className="px-4 py-3 text-amber-400 font-semibold">
-                      {log.performanceMetrics?.deadliftMax ? `${log.performanceMetrics.deadliftMax} kg` : '--'}
-                    </td>
-                    <td className="px-4 py-3 text-slate-400 max-w-xs truncate">
-                      {log.notes || '--'}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => handleDelete(log._id)}
-                        className="p-1 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition"
-                        title="Delete check-in"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+              ))}
+            </DataTable>
+          )}
+        </Card>
       </div>
     </div>
   );

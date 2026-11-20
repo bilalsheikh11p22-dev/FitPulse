@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // Image with loading shimmer + graceful fallback if the URL fails (offline, blocked, etc.)
 export default function Img({ src, alt = '', className = '', imgClassName = '', eager = false, ...rest }) {
   const [state, setState] = useState('loading');
+  useEffect(() => {
+    setState('loading'); // a new src (e.g. admin-uploaded picture replaces the default) gets a fresh load
+  }, [src]);
   const hasPosition = className.includes('absolute') || className.includes('fixed');
   return (
     <div className={`${hasPosition ? '' : 'relative'} overflow-hidden ${state === 'loading' ? 'img-skeleton' : ''} ${className}`}>

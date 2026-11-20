@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Table, ShieldCheck, Users, Dumbbell, Utensils } from 'lucide-react';
+import { FileText, Download, Table, Users, Dumbbell, Utensils, LifeBuoy } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import api from '../../api/api';
 import { toArray, toNumber, getErrorMessage, fmtDate } from '../../utils/normalize';
+import { PageHeader, Card, StatCard, Alert, Spinner, btnPrimary, btnSecondary } from '../../components/admin/ui';
 
 export default function AdminReports() {
   const [data, setData] = useState(null);
@@ -35,7 +36,7 @@ export default function AdminReports() {
     doc.setFillColor(15, 23, 42);
     doc.rect(0, 0, 210, 35, 'F');
 
-    doc.setTextColor(239, 68, 68);
+    doc.setTextColor(255, 107, 44);
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     doc.text('FITPULSE - SYSTEM AUDIT REPORT', 14, 18);
@@ -55,7 +56,7 @@ export default function AdminReports() {
         ['Support Tickets Queue', String(toNumber(data.totalTickets)), 'Open & in progress'],
       ],
       theme: 'grid',
-      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255] },
+      headStyles: { fillColor: [255, 107, 44], textColor: [255, 255, 255] },
     });
 
     const userTable = data.users.map((u) => [
@@ -102,70 +103,66 @@ export default function AdminReports() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2.5">
-            <FileText className="w-6 h-6 text-amber-400" />
-            <span>System Reports & Analytics Audit</span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Generate system-wide administrative audit reports in PDF and CSV format.
-          </p>
-        </div>
+    <div>
+      <PageHeader
+        icon={FileText}
+        title="Reports"
+        description="System-wide totals, plus audit exports you can download as PDF or CSV."
+        actions={
+          <>
+            <button onClick={handleExportCSV} disabled={loading || !data} className={btnSecondary}>
+              <Table className="w-4 h-4" />
+              Export users CSV
+            </button>
+            <button onClick={handleExportPDF} disabled={loading || !data} className={btnPrimary}>
+              <Download className="w-4 h-4" />
+              Download audit PDF
+            </button>
+          </>
+        }
+      />
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleExportPDF}
-            disabled={loading || !data}
-            className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Download className="w-4 h-4" />
-            <span>Download Audit PDF</span>
-          </button>
-          <button
-            onClick={handleExportCSV}
-            disabled={loading || !data}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Table className="w-4 h-4 text-emerald-400" />
-            <span>Export Users CSV</span>
-          </button>
-        </div>
+      <div className="space-y-4">
+        {error && <Alert>{error}</Alert>}
+
+        {loading ? (
+          <Spinner label="Loading system report…" />
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <StatCard label="Total users" value={toNumber(data?.totalUsers)} icon={Users} tone="brand" />
+              <StatCard label="Total workouts" value={toNumber(data?.totalWorkouts)} icon={Dumbbell} tone="brand" />
+              <StatCard label="Nutrition records" value={toNumber(data?.totalNutrition)} icon={Utensils} tone="emerald" />
+              <StatCard label="Support tickets" value={toNumber(data?.totalTickets)} icon={LifeBuoy} tone="amber" />
+            </div>
+
+            <Card title="Available exports">
+              <ul className="divide-y divide-slate-800/70 -my-2">
+                <li className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-white">System audit report (PDF)</p>
+                    <p className="text-sm text-slate-400 mt-0.5">Platform totals and a full list of registered users.</p>
+                  </div>
+                  <button onClick={handleExportPDF} disabled={!data} className={btnSecondary}>
+                    <Download className="w-4 h-4" />
+                    Download
+                  </button>
+                </li>
+                <li className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-white">Users export (CSV)</p>
+                    <p className="text-sm text-slate-400 mt-0.5">Name, username, email, role, status and join date.</p>
+                  </div>
+                  <button onClick={handleExportCSV} disabled={!data} className={btnSecondary}>
+                    <Table className="w-4 h-4" />
+                    Export
+                  </button>
+                </li>
+              </ul>
+            </Card>
+          </>
+        )}
       </div>
-
-      {error && (
-        <div role="alert" className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-          {error}
-        </div>
-      )}
-
-      {loading ? (
-        <div className="py-20 text-center">
-          <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-400">Loading system reports...</p>
-        </div>
-      ) : (
-        /* Aggregate Counts */
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-            <p className="text-xs text-slate-400">Total Users</p>
-            <h3 className="text-2xl font-bold text-white mt-1">{toNumber(data?.totalUsers)}</h3>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-            <p className="text-xs text-slate-400">Total Workouts</p>
-            <h3 className="text-2xl font-bold text-brand-400 mt-1">{toNumber(data?.totalWorkouts)}</h3>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-            <p className="text-xs text-slate-400">Total Nutrition</p>
-            <h3 className="text-2xl font-bold text-emerald-400 mt-1">{toNumber(data?.totalNutrition)}</h3>
-          </div>
-          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-            <p className="text-xs text-slate-400">Support Tickets</p>
-            <h3 className="text-2xl font-bold text-amber-400 mt-1">{toNumber(data?.totalTickets)}</h3>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

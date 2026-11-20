@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  Search, 
-  Trash2, 
-  UserCheck, 
-  UserX, 
-  Eye, 
-  X
-} from 'lucide-react';
+import { Users, Trash2, UserCheck, UserX, Eye } from 'lucide-react';
 import api from '../../api/api';
 import { toArray, getErrorMessage, fmtDate } from '../../utils/normalize';
 import Avatar from '../../components/ui/Avatar';
+import {
+  PageHeader,
+  Card,
+  Badge,
+  StatusDot,
+  Alert,
+  Spinner,
+  EmptyState,
+  SearchBar,
+  FilterTabs,
+  DataTable,
+  Modal,
+  tdCls,
+  iconBtn,
+  btnSecondary,
+} from '../../components/admin/ui';
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -98,249 +106,181 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2.5">
-          <Users className="w-6 h-6 text-red-400" />
-          <span>User Management & Authorization</span>
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Search, audit, inspect activity, toggle account statuses, and assign administrative roles.
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        icon={Users}
+        title="Users"
+        description="Search accounts, review activity, suspend or reactivate users and manage administrator roles."
+      />
 
-      {/* Filter Bar */}
-      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
-        <form onSubmit={handleSearchSubmit} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search user by name, username, or email..."
+      <div className="space-y-4">
+        {/* Filters */}
+        <Card>
+          <div className="space-y-4">
+            <SearchBar
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-xs focus:outline-none focus:border-red-500"
+              onChange={setSearch}
+              onSubmit={handleSearchSubmit}
+              placeholder="Search by name, username or email"
             />
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <FilterTabs label="Role" options={['all', 'user', 'admin']} value={roleFilter} onChange={setRoleFilter} />
+              <FilterTabs label="Status" options={['all', 'active', 'inactive']} value={statusFilter} onChange={setStatusFilter} />
+            </div>
           </div>
-          <button
-            type="submit"
-            className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition"
-          >
-            Search
-          </button>
-        </form>
+        </Card>
 
-        <div className="flex flex-wrap items-center gap-4 text-xs pt-1">
-          <div className="flex items-center gap-1.5">
-            <span className="text-slate-400 font-semibold">Role:</span>
-            {['all', 'user', 'admin'].map((r) => (
-              <button
-                key={r}
-                onClick={() => setRoleFilter(r)}
-                className={`px-2.5 py-1 rounded-lg capitalize ${
-                  roleFilter === r
-                    ? 'bg-red-500 text-white font-bold'
-                    : 'bg-slate-950 text-slate-400 border border-slate-800'
-                }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
+        {error && <Alert>{error}</Alert>}
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-slate-400 font-semibold">Status:</span>
-            {['all', 'active', 'inactive'].map((s) => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`px-2.5 py-1 rounded-lg capitalize ${
-                  statusFilter === s
-                    ? 'bg-red-500 text-white font-bold'
-                    : 'bg-slate-950 text-slate-400 border border-slate-800'
-                }`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {error && (
-        <div role="alert" className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-          {error}
-        </div>
-      )}
-
-      {/* Users Table */}
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-md">
-        {loading ? (
-          <div className="py-20 text-center">
-            <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-xs text-slate-400">Loading user accounts...</p>
-          </div>
-        ) : users.length === 0 ? (
-          <div className="p-12 text-center text-xs text-slate-400">
-            No users found matching the selected filters.
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px]">
-                <tr>
-                  <th className="px-4 py-3 rounded-l-lg">User</th>
-                  <th className="px-4 py-3">Email</th>
-                  <th className="px-4 py-3">Role</th>
-                  <th className="px-4 py-3">Biometrics</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Registered</th>
-                  <th className="px-4 py-3 rounded-r-lg text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/80">
-                {users.map((u) => (
-                  <tr key={u._id} className="hover:bg-slate-800/40 transition">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <Avatar src={u.avatar} name={u.name} size={32} rounded="rounded-lg" className="border border-slate-700" />
-                        <div>
-                          <p className="font-semibold text-white">{u.name}</p>
-                          <p className="text-[10px] text-slate-400">@{u.username}</p>
+        <Card
+          padded={false}
+          title={loading ? 'Accounts' : `Accounts (${users.length})`}
+          icon={Users}
+        >
+          {loading ? (
+            <Spinner label="Loading user accounts…" />
+          ) : users.length === 0 ? (
+            <EmptyState icon={Users} title="No users found" description="Try changing the search term or filters." />
+          ) : (
+            <DataTable
+              columns={[
+                { label: 'User' },
+                { label: 'Email' },
+                { label: 'Role' },
+                { label: 'Weight / Height' },
+                { label: 'Status' },
+                { label: 'Registered' },
+                { label: 'Actions', align: 'right' },
+              ]}
+            >
+              {users.map((u) => {
+                const active = u.isActive !== false;
+                return (
+                  <tr key={u._id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className={tdCls}>
+                      <div className="flex items-center gap-3">
+                        <Avatar src={u.avatar} name={u.name} size={36} rounded="rounded-full" />
+                        <div className="min-w-0">
+                          <p className="font-medium text-white truncate">{u.name}</p>
+                          <p className="text-xs text-slate-500">@{u.username}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-slate-300">{u.email}</td>
-                    <td className="px-4 py-3">
+                    <td className={`${tdCls} text-slate-300`}>{u.email}</td>
+                    <td className={tdCls}>
                       <button
                         onClick={() => handleRoleToggle(u._id, u.role)}
-                        title="Click to toggle Role"
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase transition ${
-                          u.role === 'admin'
-                            ? 'bg-red-500/15 text-red-400 border border-red-500/30'
-                            : 'bg-slate-800 text-slate-300 hover:text-white'
-                        }`}
+                        title="Click to change role"
+                        className="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
                       >
-                        {u.role}
+                        <Badge tone={u.role === 'admin' ? 'brand' : 'neutral'} className="capitalize cursor-pointer hover:brightness-125 transition">
+                          {u.role}
+                        </Badge>
                       </button>
                     </td>
-                    <td className="px-4 py-3 text-slate-300">
-                      {u.weight}kg • {u.height}cm
+                    <td className={`${tdCls} text-slate-300 whitespace-nowrap tabular-nums`}>
+                      {u.weight} kg · {u.height} cm
                     </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          u.isActive !== false
-                            ? 'bg-emerald-500/10 text-emerald-400'
-                            : 'bg-red-500/10 text-red-400'
-                        }`}
-                      >
-                        {u.isActive !== false ? <UserCheck className="w-3 h-3" /> : <UserX className="w-3 h-3" />}
-                        <span>{u.isActive !== false ? 'Active' : 'Suspended'}</span>
-                      </span>
+                    <td className={tdCls}>
+                      <StatusDot active={active} />
                     </td>
-                    <td className="px-4 py-3 text-slate-400">
-                      {fmtDate(u.createdAt)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className={`${tdCls} text-slate-400 whitespace-nowrap`}>{fmtDate(u.createdAt)}</td>
+                    <td className={`${tdCls} text-right`}>
+                      <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleViewDetails(u._id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
-                          title="View Full Profile & Activity"
+                          disabled={detailLoading}
+                          className={iconBtn}
+                          title="View profile and activity"
+                          aria-label={`View ${u.name}`}
                         >
-                          <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                          <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleToggleStatus(u._id, u.isActive !== false, u.name)}
-                          className={`p-1.5 rounded-lg transition ${
-                            u.isActive !== false
-                              ? 'text-red-400 hover:bg-red-500/10'
-                              : 'text-emerald-400 hover:bg-emerald-500/10'
-                          }`}
-                          title={u.isActive !== false ? 'Deactivate User' : 'Activate User'}
+                          onClick={() => handleToggleStatus(u._id, active, u.name)}
+                          className={`${iconBtn} ${active ? 'hover:!text-amber-400' : 'hover:!text-emerald-400'}`}
+                          title={active ? 'Deactivate user' : 'Activate user'}
+                          aria-label={active ? `Deactivate ${u.name}` : `Activate ${u.name}`}
                         >
-                          {u.isActive !== false ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                          {active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                         </button>
                         <button
                           onClick={() => handleDeleteUser(u._id, u.name)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition"
-                          title="Delete User"
+                          className={`${iconBtn} hover:!text-red-400 hover:!bg-red-500/10`}
+                          title="Delete user"
+                          aria-label={`Delete ${u.name}`}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                );
+              })}
+            </DataTable>
+          )}
+        </Card>
       </div>
 
-      {/* User Details Modal */}
-      {selectedUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto space-y-4">
-            <button
-              onClick={() => setSelectedUser(null)}
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <Avatar src={selectedUser.user?.avatar} name={selectedUser.user?.name} size={56} rounded="rounded-2xl" className="border border-slate-700" />
-              <div>
-                <h3 className="text-lg font-bold text-white">{selectedUser.user.name}</h3>
-                <p className="text-xs text-red-400">@{selectedUser.user.username} • {selectedUser.user.email}</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Role: <strong className="capitalize text-slate-200">{selectedUser.user.role}</strong></p>
+      {/* Details modal */}
+      <Modal
+        open={!!selectedUser}
+        onClose={() => setSelectedUser(null)}
+        title="User profile"
+        footer={
+          <button onClick={() => setSelectedUser(null)} className={btnSecondary}>
+            Close
+          </button>
+        }
+      >
+        {selectedUser && (
+          <>
+            <div className="flex items-center gap-4">
+              <Avatar src={selectedUser.user?.avatar} name={selectedUser.user?.name} size={56} rounded="rounded-full" />
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold text-white truncate">{selectedUser.user.name}</h3>
+                <p className="text-sm text-slate-400 truncate">
+                  @{selectedUser.user.username} · {selectedUser.user.email}
+                </p>
+                <Badge tone={selectedUser.user.role === 'admin' ? 'brand' : 'neutral'} className="capitalize mt-1.5">
+                  {selectedUser.user.role}
+                </Badge>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
-                <p className="text-slate-400">Workouts</p>
-                <p className="font-bold text-white text-base mt-0.5">{selectedUser.workoutsCount}</p>
-              </div>
-              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
-                <p className="text-slate-400">Nutrition</p>
-                <p className="font-bold text-white text-base mt-0.5">{selectedUser.nutritionCount}</p>
-              </div>
-              <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800">
-                <p className="text-slate-400">Progress Logs</p>
-                <p className="font-bold text-white text-base mt-0.5">{selectedUser.progressCount}</p>
-              </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                ['Workouts', selectedUser.workoutsCount],
+                ['Nutrition', selectedUser.nutritionCount],
+                ['Progress logs', selectedUser.progressCount],
+              ].map(([label, val]) => (
+                <div key={label} className="rounded-lg bg-slate-950 border border-slate-800 p-3 text-center">
+                  <p className="text-xl font-bold text-white tabular-nums">{val}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{label}</p>
+                </div>
+              ))}
             </div>
 
-            {/* Recent Workouts */}
-            <div className="space-y-1.5 pt-2">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Recent Workouts</h4>
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-2">Recent workouts</h4>
               {toArray(selectedUser.recentWorkouts).length > 0 ? (
-                toArray(selectedUser.recentWorkouts).map((w) => (
-                  <div key={w._id} className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs flex justify-between">
-                    <span>{w.title} ({w.category})</span>
-                    <span className="text-brand-400">{w.caloriesBurned} kcal</span>
-                  </div>
-                ))
+                <ul className="rounded-lg border border-slate-800 divide-y divide-slate-800/70 overflow-hidden">
+                  {toArray(selectedUser.recentWorkouts).map((w) => (
+                    <li key={w._id} className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-sm bg-slate-950">
+                      <span className="text-slate-200 truncate">
+                        {w.title} <span className="text-slate-500">({w.category})</span>
+                      </span>
+                      <span className="text-brand-400 font-medium tabular-nums shrink-0">{w.caloriesBurned} kcal</span>
+                    </li>
+                  ))}
+                </ul>
               ) : (
-                <p className="text-xs text-slate-500 italic">No workouts logged yet.</p>
+                <p className="text-sm text-slate-500">No workouts logged yet.</p>
               )}
             </div>
-
-            <div className="pt-3 border-t border-slate-800 flex justify-end">
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="px-4 py-1.5 rounded-lg bg-slate-800 text-xs font-semibold text-white"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -1,17 +1,19 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { SiteMediaProvider } from './context/SiteMediaContext';
 
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import AdminNavbar from './components/admin/AdminNavbar';
+import AdminLayout from './components/admin/AdminLayout';
 
 // Public Pages
 import Landing from './pages/Landing';
 import About from './pages/public/About';
 import FeaturesPage from './pages/public/FeaturesPage';
 import Contact from './pages/public/Contact';
+import ProgramDetail from './pages/public/ProgramDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -43,6 +45,7 @@ import AdminSupport from './pages/admin/AdminSupport';
 import AdminFeedback from './pages/admin/AdminFeedback';
 import AdminNotifications from './pages/admin/AdminNotifications';
 import AdminSettings from './pages/admin/AdminSettings';
+import AdminMedia from './pages/admin/AdminMedia';
 
 // Protected Route Guard (For Logged in Users)
 const ProtectedRoute = ({ children }) => {
@@ -70,7 +73,7 @@ const AdminRoute = ({ children }) => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-400">
-        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-[3px] border-brand-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -104,234 +107,255 @@ function AppLayout() {
 
   const isAdminView = location.pathname.startsWith('/admin') && location.pathname !== '/admin/login';
 
+  const routes = (
+      <Routes>
+        {/* Public / Guest Pages */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/programs/:slug" element={<ProgramDetail />} />
+
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+
+        {/* Auth Utility Pages (public — no redirect if logged in) */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+
+        {/* Admin Login Portal */}
+        <Route
+          path="/admin/login"
+          element={
+            <PublicRoute>
+              <AdminLogin />
+            </PublicRoute>
+          }
+        />
+
+        {/* User Panel Pages (Protected) */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/workouts"
+          element={
+            <ProtectedRoute>
+              <Workouts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/nutrition"
+          element={
+            <ProtectedRoute>
+              <Nutrition />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <Progress />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <Analytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reminders"
+          element={
+            <ProtectedRoute>
+              <Reminders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/goals-reminders"
+          element={
+            <ProtectedRoute>
+              <Reminders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute>
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/support"
+          element={
+            <ProtectedRoute>
+              <Support />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Panel Pages (Protected by AdminRoute) */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminRoute>
+              <AdminUsers />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/workouts"
+          element={
+            <AdminRoute>
+              <AdminWorkouts />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/nutrition"
+          element={
+            <AdminRoute>
+              <AdminNutrition />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/progress"
+          element={
+            <AdminRoute>
+              <AdminProgress />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/reports"
+          element={
+            <AdminRoute>
+              <AdminReports />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/support"
+          element={
+            <AdminRoute>
+              <AdminSupport />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/feedback"
+          element={
+            <AdminRoute>
+              <AdminFeedback />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/notifications"
+          element={
+            <AdminRoute>
+              <AdminNotifications />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/media"
+          element={
+            <AdminRoute>
+              <AdminMedia />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <AdminRoute>
+              <AdminSettings />
+            </AdminRoute>
+          }
+        />
+
+        {/* Fallback route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+  );
+
+  if (isAdminView) {
+    return (
+      <AdminLayout>
+        <div key={location.pathname} className="page-enter">{routes}</div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-sans">
-      {isAdminView ? <AdminNavbar /> : <Navbar />}
+      <Navbar />
       <main key={location.pathname} className="flex-1">
-        <Routes>
-          {/* Public / Guest Pages */}
-          <Route path="/" element={<Landing />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/features" element={<FeaturesPage />} />
-          <Route path="/contact" element={<Contact />} />
-
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <PublicRoute>
-                <Register />
-              </PublicRoute>
-            }
-          />
-
-          {/* Auth Utility Pages (public — no redirect if logged in) */}
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
-
-          {/* Admin Login Portal */}
-          <Route
-            path="/admin/login"
-            element={
-              <PublicRoute>
-                <AdminLogin />
-              </PublicRoute>
-            }
-          />
-
-          {/* User Panel Pages (Protected) */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/workouts"
-            element={
-              <ProtectedRoute>
-                <Workouts />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/nutrition"
-            element={
-              <ProtectedRoute>
-                <Nutrition />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/progress"
-            element={
-              <ProtectedRoute>
-                <Progress />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute>
-                <Analytics />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/notifications"
-            element={
-              <ProtectedRoute>
-                <Notifications />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reminders"
-            element={
-              <ProtectedRoute>
-                <Reminders />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/goals-reminders"
-            element={
-              <ProtectedRoute>
-                <Reminders />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <ProtectedRoute>
-                <Reports />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/support"
-            element={
-              <ProtectedRoute>
-                <Support />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Admin Panel Pages (Protected by AdminRoute) */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <AdminRoute>
-                <AdminUsers />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/workouts"
-            element={
-              <AdminRoute>
-                <AdminWorkouts />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/nutrition"
-            element={
-              <AdminRoute>
-                <AdminNutrition />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/progress"
-            element={
-              <AdminRoute>
-                <AdminProgress />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/reports"
-            element={
-              <AdminRoute>
-                <AdminReports />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/support"
-            element={
-              <AdminRoute>
-                <AdminSupport />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/feedback"
-            element={
-              <AdminRoute>
-                <AdminFeedback />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/notifications"
-            element={
-              <AdminRoute>
-                <AdminNotifications />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/settings"
-            element={
-              <AdminRoute>
-                <AdminSettings />
-              </AdminRoute>
-            }
-          />
-
-          {/* Fallback route */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        {routes}
       </main>
-      {!isAdminView && <Footer />}
+      <Footer />
     </div>
   );
 }
@@ -340,7 +364,9 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppLayout />
+        <SiteMediaProvider>
+          <AppLayout />
+        </SiteMediaProvider>
       </AuthProvider>
     </Router>
   );

@@ -12,7 +12,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
-const { startReminderScheduler } = require('./utils/reminderScheduler');
+const { startReminderScheduler, processDueReminders } = require('./utils/reminderScheduler');
 
 const app = express();
 
@@ -57,18 +57,26 @@ const ALLOWED_ORIGINS = (
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
-        return callback(null, true);
-      }
+// Same-origin requests (frontend and API served from the same Vercel domain) are always allowed.
+// The browser still sends an Origin header on POST/PUT/DELETE, so it is compared with the request host.
+const isSameOrigin = (req, origin) => {
+  try {
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    return Boolean(host) && new URL(origin).host === host;
+  } catch {
+    return false;
+  }
+};
 
-      return callback(
-        new Error(`CORS: origin '${origin}' is not allowed`)
-      );
-    },
-    credentials: true,
+app.use(
+  cors((req, callback) => {
+    const origin = req.header('Origin');
+
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || isSameOrigin(req, origin)) {
+      return callback(null, { origin: true, credentials: true });
+    }
+
+    return callback(new Error(`CORS: origin '${origin}' is not allowed`));
   })
 );
 
@@ -156,8 +164,33 @@ app.use('/api', async (req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────────
+// Reminder cron (Vercel Cron)
+// A serverless function cannot keep a background timer running, so Vercel Cron calls this
+// endpoint instead (see "crons" in vercel.json). Set CRON_SECRET in the Vercel env variables;
+// Vercel then sends it automatically as "Authorization: Bearer <CRON_SECRET>".
+// ─────────────────────────────────────────────────────────────
+
+app.get('/api/cron/reminders', async (req, res, next) => {
+  const secret = process.env.CRON_SECRET;
+
+  if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  try {
+    const notified = await processDueReminders(new Date());
+    res.status(200).json({ success: true, notified });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
 // API routes
 // ─────────────────────────────────────────────────────────────
+
+// Site media is public and cached (the video is fetched in several range requests), so it has no per-IP limiter.
+app.use('/api/media', require('./routes/mediaRoutes'));
 
 app.use('/api/auth', authLimiter, require('./routes/authRoutes'));
 

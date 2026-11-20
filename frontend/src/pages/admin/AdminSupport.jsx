@@ -2,6 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { LifeBuoy, Send, User } from 'lucide-react';
 import api from '../../api/api';
 import { toArray, getErrorMessage, toDate } from '../../utils/normalize';
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Alert,
+  Spinner,
+  EmptyState,
+  FilterTabs,
+  inputCls,
+  btnPrimary,
+} from '../../components/admin/ui';
+
+const STATUS_TONE = { open: 'warning', in_progress: 'info', resolved: 'success', closed: 'neutral' };
+const PRIORITY_TONE = { high: 'danger', urgent: 'danger', medium: 'warning', low: 'neutral' };
 
 export default function AdminSupport() {
   const [tickets, setTickets] = useState([]);
@@ -62,141 +76,131 @@ export default function AdminSupport() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2.5">
-          <LifeBuoy className="w-6 h-6 text-red-400" />
-          <span>Support Tickets & Helpdesk Queue</span>
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Review, answer, and resolve technical issues and inquiries submitted by users.
-        </p>
-      </div>
+    <div>
+      <PageHeader
+        icon={LifeBuoy}
+        title="Support tickets"
+        description="Read, answer and resolve the issues and questions users send in."
+      />
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2">
-        {['all', 'open', 'in_progress', 'resolved', 'closed'].map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition ${
-              statusFilter === s
-                ? 'bg-red-500 text-white font-bold'
-                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-            }`}
-          >
-            {s.replace('_', ' ')}
-          </button>
-        ))}
-      </div>
+      <div className="space-y-4">
+        <FilterTabs
+          options={[
+            { value: 'all', label: 'All' },
+            { value: 'open', label: 'Open' },
+            { value: 'in_progress', label: 'In progress' },
+            { value: 'resolved', label: 'Resolved' },
+            { value: 'closed', label: 'Closed' },
+          ]}
+          value={statusFilter}
+          onChange={setStatusFilter}
+        />
 
-      {/* Tickets List */}
-      {error && (
-        <div role="alert" className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-          {error}
-        </div>
-      )}
+        {error && <Alert>{error}</Alert>}
 
-      {loading ? (
-        <div className="py-20 text-center">
-          <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-400">Loading tickets...</p>
-        </div>
-      ) : tickets.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
-          No support tickets found for this status.
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {tickets.map((t) => (
-            <div
-              key={t._id}
-              className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-4"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-950 text-slate-300 border border-slate-800">
-                      {t.category}
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                      Priority: {t.priority}
-                    </span>
-                  </div>
-                  <h3 className="text-base font-bold text-white">{t.subject}</h3>
-                  <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                    <User className="w-3.5 h-3.5 text-brand-400" />
-                    <span>From: {t.user?.name || 'Athlete'} ({t.user?.email})</span>
-                  </p>
-                </div>
-
-                {/* Status Dropdown */}
-                <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <span className="text-xs text-slate-400">Status:</span>
-                  <select
-                    value={t.status}
-                    onChange={(e) => handleStatusChange(t._id, e.target.value)}
-                    className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-semibold focus:outline-none focus:border-red-500"
-                  >
-                    <option value="open">Open</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Message thread */}
-              <div className="space-y-2 pt-2 border-t border-slate-800">
-                {toArray(t.messages).map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`p-3 rounded-xl text-xs ${
-                      msg.sender === 'support'
-                        ? 'bg-red-950/20 border border-red-500/30 text-red-200'
-                        : 'bg-slate-950 border border-slate-800 text-slate-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                      <strong className="capitalize">{msg.sender === 'support' ? 'You (Support Admin)' : t.user?.name || 'User'}</strong>
-                      <span>{toDate(msg.timestamp) ? toDate(msg.timestamp).toLocaleString() : ''}</span>
+        {loading ? (
+          <Spinner label="Loading tickets…" />
+        ) : tickets.length === 0 ? (
+          <Card>
+            <EmptyState icon={LifeBuoy} title="No tickets here" description="There are no support tickets with this status." />
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {tickets.map((t) => (
+              <article key={t._id} className="rounded-xl bg-slate-900 border border-slate-800">
+                <div className="p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <Badge tone={STATUS_TONE[t.status] || 'neutral'} className="capitalize">
+                        {String(t.status).replace('_', ' ')}
+                      </Badge>
+                      <Badge tone="neutral" className="capitalize">{t.category}</Badge>
+                      <Badge tone={PRIORITY_TONE[String(t.priority).toLowerCase()] || 'neutral'} className="capitalize">
+                        {t.priority} priority
+                      </Badge>
                     </div>
-                    <p>{msg.text}</p>
+                    <h3 className="text-base font-semibold text-white">{t.subject}</h3>
+                    <p className="text-sm text-slate-400 flex items-center gap-1.5 mt-1">
+                      <User className="w-3.5 h-3.5 text-slate-500" />
+                      <span className="truncate">
+                        {t.user?.name || 'Athlete'} <span className="text-slate-500">{t.user?.email}</span>
+                      </span>
+                    </p>
                   </div>
-                ))}
-              </div>
 
-              {/* Admin reply input */}
-              <div className="flex gap-2 pt-2">
-                <input
-                  type="text"
-                  placeholder="Type official response as Administrator..."
-                  value={replyText[t._id] || ''}
-                  disabled={sendingId === t._id}
-                  onChange={(e) => setReplyText({ ...replyText, [t._id]: e.target.value })}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleSendReply(t._id);
-                    }
-                  }}
-                  className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-red-500 disabled:opacity-50"
-                />
-                <button
-                  type="button"
-                  disabled={sendingId === t._id || !(replyText[t._id] || '').trim()}
-                  onClick={() => handleSendReply(t._id)}
-                  className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>{sendingId === t._id ? 'Sending...' : 'Reply'}</span>
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                  <label className="flex items-center gap-2 shrink-0">
+                    <span className="text-sm text-slate-400">Status</span>
+                    <select
+                      value={t.status}
+                      onChange={(e) => handleStatusChange(t._id, e.target.value)}
+                      className={`${inputCls} !w-auto !py-2`}
+                    >
+                      <option value="open">Open</option>
+                      <option value="in_progress">In progress</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                  </label>
+                </div>
+
+                {/* Conversation */}
+                <div className="px-5 pb-5 space-y-3">
+                  {toArray(t.messages).map((msg, i) => {
+                    const fromSupport = msg.sender === 'support';
+                    return (
+                      <div key={i} className={`flex ${fromSupport ? 'justify-end' : 'justify-start'}`}>
+                        <div
+                          className={`max-w-[85%] rounded-xl px-4 py-3 text-sm ${
+                            fromSupport
+                              ? 'bg-brand-500/10 border border-brand-500/25 text-slate-100'
+                              : 'bg-slate-950 border border-slate-800 text-slate-200'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-4 text-xs text-slate-400 mb-1">
+                            <strong className="font-medium text-slate-300">
+                              {fromSupport ? 'You (Support)' : t.user?.name || 'User'}
+                            </strong>
+                            <span>{toDate(msg.timestamp) ? toDate(msg.timestamp).toLocaleString() : ''}</span>
+                          </div>
+                          <p className="whitespace-pre-wrap">{msg.text}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Reply */}
+                <div className="px-5 py-4 border-t border-slate-800 flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Write a reply to the user…"
+                    aria-label="Reply message"
+                    value={replyText[t._id] || ''}
+                    disabled={sendingId === t._id}
+                    onChange={(e) => setReplyText({ ...replyText, [t._id]: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSendReply(t._id);
+                      }
+                    }}
+                    className={inputCls}
+                  />
+                  <button
+                    type="button"
+                    disabled={sendingId === t._id || !(replyText[t._id] || '').trim()}
+                    onClick={() => handleSendReply(t._id)}
+                    className={btnPrimary}
+                  >
+                    <Send className="w-4 h-4" />
+                    {sendingId === t._id ? 'Sending…' : 'Reply'}
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

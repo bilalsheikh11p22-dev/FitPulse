@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import {
   Dumbbell, TrendingUp, Apple, FileText, Clock, BarChart3, ArrowRight, Play, Flame, Star,
   CheckCircle2, Target, Quote, Activity, Trophy, HeartPulse,
@@ -9,6 +9,8 @@ import Img from '../components/ui/Img';
 import Reveal from '../components/ui/Reveal';
 import Counter from '../components/ui/Counter';
 import { IMAGES } from '../data/images';
+import { PROGRAM_MEDIA_KEY } from '../data/mediaSlots';
+import { useSiteMedia } from '../context/SiteMediaContext';
 
 const features = [
   { icon: Dumbbell, title: 'Workout Builder', desc: 'Log exercises, sets, reps and weights. Tag sessions as Strength, Cardio or HIIT and see your history at a glance.', color: 'text-brand-400', bg: 'bg-brand-500/15' },
@@ -20,10 +22,10 @@ const features = [
 ];
 
 const programs = [
-  { title: 'Strength', tag: 'Build power', img: IMAGES.strength },
-  { title: 'Cardio', tag: 'Boost endurance', img: IMAGES.cardio },
-  { title: 'Mobility & Yoga', tag: 'Move better', img: IMAGES.yoga },
-  { title: 'Nutrition', tag: 'Fuel right', img: IMAGES.nutrition },
+  { slug: 'strength', title: 'Strength', tag: 'Build power', img: IMAGES.strength },
+  { slug: 'cardio', title: 'Cardio', tag: 'Boost endurance', img: IMAGES.cardio },
+  { slug: 'yoga', title: 'Mobility & Yoga', tag: 'Move better', img: IMAGES.yoga },
+  { slug: 'nutrition', title: 'Nutrition', tag: 'Fuel right', img: IMAGES.nutrition },
 ];
 
 const steps = [
@@ -41,6 +43,10 @@ const testimonials = [
 const marquee = ['STRENGTH', 'CARDIO', 'HIIT', 'NUTRITION', 'MOBILITY', 'RECOVERY', 'GOALS', 'PROGRESS', 'ANALYTICS', 'REPORTS'];
 
 export default function Landing() {
+  const { getUrl } = useSiteMedia();
+  const heroVideo = getUrl('heroVideo', null);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const reduceMotion = useReducedMotion();
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '25%']);
@@ -52,7 +58,22 @@ export default function Landing() {
       {/* ================= HERO ================= */}
       <section ref={heroRef} className="relative isolate min-h-[92vh] flex items-center overflow-hidden">
         <motion.div style={{ y: imgY }} className="absolute inset-0 -z-20">
-          <Img src={IMAGES.hero} alt="Athlete training in the gym" eager className="w-full h-full" imgClassName="scale-110" />
+          <Img src={getUrl('heroPoster', IMAGES.hero)} alt="Athlete training in the gym" eager className="w-full h-full" imgClassName="scale-110" />
+          {heroVideo && !videoFailed && !reduceMotion && (
+            <video
+              key={heroVideo}
+              src={heroVideo}
+              poster={getUrl('heroPoster', IMAGES.hero)}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              aria-hidden="true"
+              onError={() => setVideoFailed(true)}
+              className="absolute inset-0 w-full h-full object-cover scale-110"
+            />
+          )}
         </motion.div>
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/90 via-black/65 to-black/25" />
         <div className="absolute inset-x-0 bottom-0 h-40 -z-10 bg-gradient-to-t from-slate-950 to-transparent" />
@@ -244,17 +265,17 @@ export default function Landing() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {programs.map((p, i) => (
               <Reveal key={p.title} delay={i * 0.09}>
-                <div className="group relative rounded-2xl overflow-hidden aspect-[3/4] img-zoom cursor-pointer">
-                  <Img src={p.img} alt={p.title} className="absolute inset-0" />
+                <Link to={`/programs/${p.slug}`} aria-label={`${p.title}: ${p.tag}`} className="group relative block rounded-2xl overflow-hidden aspect-[3/4] img-zoom focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
+                  <Img src={getUrl(PROGRAM_MEDIA_KEY[p.slug], p.img)} alt={p.title} className="absolute inset-0" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 text-[#fff]">
                     <p className="text-[11px] uppercase tracking-widest text-brand-400 font-bold">{p.tag}</p>
                     <h3 className="mt-1 text-lg sm:text-2xl font-extrabold">{p.title}</h3>
-                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                      Start tracking <ArrowRight className="w-3.5 h-3.5" />
+                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 sm:group-focus-visible:opacity-100 transition-all duration-300">
+                      Learn more <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
-                </div>
+                </Link>
               </Reveal>
             ))}
           </div>
@@ -266,7 +287,7 @@ export default function Landing() {
         <Reveal x={-40} y={0}>
           <div className="relative">
             <div className="absolute -inset-4 bg-gradient-to-tr from-brand-500/30 to-amber-400/10 blur-2xl rounded-[2rem]" />
-            <Img src={IMAGES.heroSide} alt="Woman exercising" className="relative rounded-3xl aspect-[4/5] sm:aspect-[5/5] w-full shadow-soft" />
+            <Img src={getUrl('heroSide', IMAGES.heroSide)} alt="Woman exercising" className="relative rounded-3xl aspect-[4/5] sm:aspect-[5/5] w-full shadow-soft" />
             <motion.div
               animate={{ y: [0, -10, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
