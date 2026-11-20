@@ -1,14 +1,12 @@
 
 import axios from 'axios';
 
-// Production uses the deployed backend.
-// Development uses the local backend.
+// Production: frontend and backend are ONE Vercel project, so the API is same-origin (/api).
+// Development: the local backend. VITE_API_URL overrides both (e.g. to point at a separate backend).
 const API_BASE_URL = import.meta.env.VITE_API_URL ||
-  (import.meta.env.PROD
-    ? 'https://pulsefit-5wbi.vercel.app/api'
-    : 'http://localhost:5001/api');
+  (import.meta.env.PROD ? '/api' : 'http://localhost:5001/api');
 
-console.log('[FitPulse API] Using:', API_BASE_URL);
+if (import.meta.env.DEV) console.log('[FitPulse API] Using:', API_BASE_URL);
 
 const api = axios.create({
   baseURL: API_BASE_URL,

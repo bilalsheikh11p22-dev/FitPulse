@@ -1,23 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Users, 
-  Dumbbell, 
-  Utensils, 
-  Scale, 
-  LifeBuoy, 
-  Star, 
-  ShieldCheck, 
-  UserCheck, 
-  UserX, 
-  TrendingUp, 
-  ArrowRight,
-  Bell,
-  Activity
+import {
+  Users,
+  Dumbbell,
+  Utensils,
+  Scale,
+  LifeBuoy,
+  Star,
+  LayoutDashboard,
+  Megaphone,
+  FileText,
+  ArrowUpRight,
+  UserCheck,
+  UserX,
 } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import api from '../../api/api';
-import { toArray, toNumber, getErrorMessage, fmtDate } from '../../utils/normalize';
+import { toArray, toNumber, getErrorMessage } from '../../utils/normalize';
 import Avatar from '../../components/ui/Avatar';
+import {
+  PageHeader,
+  Card,
+  StatCard,
+  Badge,
+  StatusDot,
+  Alert,
+  Spinner,
+  EmptyState,
+  DataTable,
+  tdCls,
+  btnPrimary,
+  btnSecondary,
+} from '../../components/admin/ui';
+
+const chartTooltip = {
+  contentStyle: {
+    background: 'rgb(var(--s900))',
+    border: '1px solid rgb(var(--s700))',
+    borderRadius: 8,
+    fontSize: 12,
+    color: 'rgb(var(--white))',
+  },
+  cursor: { fill: 'rgb(var(--s700) / 0.35)' },
+};
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -57,258 +82,247 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <Spinner label="Loading dashboard…" />;
+
+  const totalUsers = toNumber(stats?.totalUsers);
+  const activeUsers = toNumber(stats?.activeUsers);
+  const inactiveUsers = Math.max(0, totalUsers - activeUsers);
+
+  const activityData = [
+    { name: 'Workouts', value: toNumber(stats?.totalWorkouts), color: '#ff6b2c' },
+    { name: 'Meals', value: toNumber(stats?.totalNutrition), color: '#10b981' },
+    { name: 'Check-ins', value: toNumber(stats?.totalProgress), color: '#06b6d4' },
+  ];
+  const userSplit = [
+    { name: 'Active', value: activeUsers, color: '#10b981' },
+    { name: 'Suspended', value: inactiveUsers, color: '#64748b' },
+  ];
+  const hasActivity = activityData.some((d) => d.value > 0);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Header */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-red-950/40 border border-red-500/30 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1.5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>FitPulse System Control Hub</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
-            Administrator Dashboard
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
-            Real-time multi-tenant monitoring across users, workouts, nutrition records, and support queues.
-          </p>
-        </div>
+    <div className="space-y-6">
+      <PageHeader
+        icon={LayoutDashboard}
+        title="Dashboard"
+        description="A live snapshot of users, activity and support across the platform."
+        actions={
+          <>
+            <Link to="/admin/reports" className={btnSecondary}>
+              <FileText className="w-4 h-4" />
+              Reports
+            </Link>
+            <Link to="/admin/notifications" className={btnPrimary}>
+              <Megaphone className="w-4 h-4" />
+              New broadcast
+            </Link>
+          </>
+        }
+      />
 
-        <div className="flex items-center gap-3">
-          <Link
-            to="/admin/notifications"
-            className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition shadow-lg shadow-red-500/25 flex items-center gap-2"
-          >
-            <Bell className="w-4 h-4" />
-            <span>Broadcast Alert</span>
-          </Link>
-          <Link
-            to="/admin/reports"
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold border border-slate-700 transition"
-          >
-            Full System Reports
-          </Link>
-        </div>
+      {error && <Alert>{error}</Alert>}
+
+      {/* KPIs */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        <StatCard label="Total users" value={totalUsers} hint={`${activeUsers} active`} icon={Users} tone="brand" />
+        <StatCard label="Workouts logged" value={toNumber(stats?.totalWorkouts)} hint="Training sessions" icon={Dumbbell} tone="brand" />
+        <StatCard label="Meals logged" value={toNumber(stats?.totalNutrition)} hint="Nutrition entries" icon={Utensils} tone="emerald" />
+        <StatCard label="Progress check-ins" value={toNumber(stats?.totalProgress)} hint="Biometric records" icon={Scale} tone="cyan" />
+        <StatCard label="Pending tickets" value={toNumber(stats?.pendingTickets)} hint="Awaiting a reply" icon={LifeBuoy} tone="amber" />
+        <StatCard label="Feedback received" value={toNumber(stats?.totalFeedback)} hint="User reviews" icon={Star} tone="violet" />
       </div>
 
-      {error && (
-        <div role="alert" className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-          {error}
-        </div>
-      )}
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <Card title="Platform activity" className="lg:col-span-2">
+          {hasActivity ? (
+            <div className="h-60 text-slate-400">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={activityData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }} barCategoryGap="35%">
+                  <XAxis dataKey="name" tickLine={false} axisLine={false} tick={{ fill: 'currentColor', fontSize: 12 }} />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: 'currentColor', fontSize: 12 }} />
+                  <Tooltip {...chartTooltip} />
+                  <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                    {activityData.map((d) => (
+                      <Cell key={d.name} fill={d.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyState icon={Dumbbell} title="No activity yet" description="Charts appear once users start logging workouts, meals and check-ins." />
+          )}
+        </Card>
 
-      {/* 1. Core Platform Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <p className="text-[11px] text-slate-400">Total Users</p>
-          <h3 className="text-2xl font-bold text-white mt-1">{toNumber(stats?.totalUsers)}</h3>
-          <p className="text-[10px] text-brand-400 mt-1">{toNumber(stats?.activeUsers)} Active</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <p className="text-[11px] text-slate-400">Total Workouts</p>
-          <h3 className="text-2xl font-bold text-brand-400 mt-1">{toNumber(stats?.totalWorkouts)}</h3>
-          <p className="text-[10px] text-slate-400 mt-1">Logged sessions</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <p className="text-[11px] text-slate-400">Meals Logged</p>
-          <h3 className="text-2xl font-bold text-emerald-400 mt-1">{toNumber(stats?.totalNutrition)}</h3>
-          <p className="text-[10px] text-slate-400 mt-1">Nutrition items</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <p className="text-[11px] text-slate-400">Progress Check-ins</p>
-          <h3 className="text-2xl font-bold text-cyan-400 mt-1">{toNumber(stats?.totalProgress)}</h3>
-          <p className="text-[10px] text-slate-400 mt-1">Biometrics logged</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <p className="text-[11px] text-slate-400">Pending Tickets</p>
-          <h3 className="text-2xl font-bold text-amber-400 mt-1">{toNumber(stats?.pendingTickets)}</h3>
-          <p className="text-[10px] text-slate-400 mt-1">Requires review</p>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
-          <p className="text-[11px] text-slate-400">Total Feedback</p>
-          <h3 className="text-2xl font-bold text-purple-400 mt-1">{toNumber(stats?.totalFeedback)}</h3>
-          <p className="text-[10px] text-slate-400 mt-1">Reviews</p>
-        </div>
+        <Card title="User base">
+          {totalUsers > 0 ? (
+            <div className="flex flex-col items-center">
+              <div className="relative w-44 h-44">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={userSplit} dataKey="value" innerRadius={56} outerRadius={78} paddingAngle={2} stroke="none">
+                      {userSplit.map((d) => (
+                        <Cell key={d.name} fill={d.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip {...chartTooltip} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-2xl font-bold text-white tabular-nums">{totalUsers}</span>
+                  <span className="text-xs text-slate-400">users</span>
+                </div>
+              </div>
+              <ul className="mt-4 w-full space-y-2 text-sm">
+                {userSplit.map((d) => (
+                  <li key={d.name} className="flex items-center justify-between">
+                    <span className="flex items-center gap-2 text-slate-300">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} />
+                      {d.name}
+                    </span>
+                    <span className="font-semibold text-white tabular-nums">{d.value}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <EmptyState icon={Users} title="No users yet" />
+          )}
+        </Card>
       </div>
 
-      {/* 2. Recent Registered Users Table */}
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-red-400" />
-            <h3 className="text-base font-bold text-white">Recent Registered Users</h3>
-          </div>
-          <Link to="/admin/users" className="text-xs text-red-400 hover:underline flex items-center gap-1">
-            <span>Manage All Users</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+      {/* Recent users */}
+      <Card
+        title="Recently registered users"
+        icon={Users}
+        padded={false}
+        action={
+          <Link to="/admin/users" className="text-sm font-medium text-brand-400 hover:text-brand-300 inline-flex items-center gap-1">
+            Manage users <ArrowUpRight className="w-4 h-4" />
           </Link>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px]">
-              <tr>
-                <th className="px-4 py-3 rounded-l-lg">User</th>
-                <th className="px-4 py-3">Email</th>
-                <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3">Fitness Goal</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 rounded-r-lg text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/80">
-              {stats?.recentUsers?.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-slate-400 italic">
-                    No registered users found.
-                  </td>
-                </tr>
-              )}
-              {stats?.recentUsers?.map((u) => (
-                <tr key={u._id} className="hover:bg-slate-800/40">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <Avatar src={u.avatar} name={u.name} size={28} rounded="rounded-lg" />
-                      <div>
-                        <p className="font-semibold text-white">{u.name}</p>
-                        <p className="text-[10px] text-slate-400">@{u.username}</p>
+        }
+      >
+        {stats?.recentUsers?.length === 0 ? (
+          <EmptyState icon={Users} title="No registered users found" />
+        ) : (
+          <DataTable
+            columns={[
+              { label: 'User' },
+              { label: 'Email' },
+              { label: 'Role' },
+              { label: 'Fitness goal' },
+              { label: 'Status' },
+              { label: 'Actions', align: 'right' },
+            ]}
+          >
+            {stats?.recentUsers?.map((u) => {
+              const active = u.isActive !== false;
+              return (
+                <tr key={u._id} className="hover:bg-slate-800/40 transition-colors">
+                  <td className={tdCls}>
+                    <div className="flex items-center gap-3">
+                      <Avatar src={u.avatar} name={u.name} size={36} rounded="rounded-full" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-white truncate">{u.name}</p>
+                        <p className="text-xs text-slate-500">@{u.username}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-slate-300">{u.email}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                        u.role === 'admin'
-                          ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                          : 'bg-slate-800 text-slate-300'
-                      }`}
-                    >
+                  <td className={`${tdCls} text-slate-300`}>{u.email}</td>
+                  <td className={tdCls}>
+                    <Badge tone={u.role === 'admin' ? 'brand' : 'neutral'} className="capitalize">
                       {u.role}
-                    </span>
+                    </Badge>
                   </td>
-                  <td className="px-4 py-3 capitalize text-slate-400">
-                    {u.fitnessGoal?.replace('_', ' ') || 'General'}
+                  <td className={`${tdCls} capitalize text-slate-400`}>{u.fitnessGoal?.replace('_', ' ') || 'General'}</td>
+                  <td className={tdCls}>
+                    <StatusDot active={active} />
                   </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold ${
-                        u.isActive !== false
-                          ? 'bg-emerald-500/10 text-emerald-400'
-                          : 'bg-red-500/10 text-red-400'
-                      }`}
-                    >
-                      {u.isActive !== false ? <UserCheck className="w-3 h-3" /> : <UserX className="w-3 h-3" />}
-                      <span>{u.isActive !== false ? 'Active' : 'Suspended'}</span>
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className={`${tdCls} text-right`}>
                     <button
-                      onClick={() => handleToggleUser(u._id, u.isActive !== false, u.name)}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
-                        u.isActive !== false
-                          ? 'text-red-400 hover:bg-red-500/10'
-                          : 'text-emerald-400 hover:bg-emerald-500/10'
+                      onClick={() => handleToggleUser(u._id, active, u.name)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                        active
+                          ? 'border-slate-700 text-slate-300 hover:border-red-500/40 hover:text-red-400 hover:bg-red-500/10'
+                          : 'border-slate-700 text-slate-300 hover:border-emerald-500/40 hover:text-emerald-400 hover:bg-emerald-500/10'
                       }`}
                     >
-                      {u.isActive !== false ? 'Deactivate' : 'Activate'}
+                      {active ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+                      {active ? 'Deactivate' : 'Activate'}
                     </button>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+              );
+            })}
+          </DataTable>
+        )}
+      </Card>
 
-      {/* 3. Global Activity Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Global Workouts */}
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Dumbbell className="w-5 h-5 text-brand-400" />
-              <span>Recent User Workouts</span>
-            </h3>
-            <Link to="/admin/workouts" className="text-xs text-red-400 hover:underline">
-              View All
+      {/* Activity feeds */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card
+          title="Recent workouts"
+          icon={Dumbbell}
+          padded={false}
+          action={
+            <Link to="/admin/workouts" className="text-sm font-medium text-brand-400 hover:text-brand-300">
+              View all
             </Link>
-          </div>
-
-          <div className="space-y-2">
-            {stats?.recentWorkouts?.length === 0 && (
-              <p className="text-xs text-slate-400 italic p-4 bg-slate-950 border border-slate-800 rounded-xl">
-                No user workouts logged yet.
-              </p>
-            )}
-            {stats?.recentWorkouts?.map((w) => (
-              <div
-                key={w._id}
-                className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs"
-              >
-                <div>
-                  <h4 className="font-semibold text-white">{w.title}</h4>
-                  <p className="text-[11px] text-slate-400">
-                    By <strong className="text-slate-200">{w.user?.name || 'Athlete'}</strong> • {w.category} • {w.duration} mins
-                  </p>
-                </div>
-                <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-bold border border-amber-500/20">
-                  {w.caloriesBurned} kcal
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Feedback Feed */}
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-              <span>Recent User Feedback</span>
-            </h3>
-            <Link to="/admin/feedback" className="text-xs text-red-400 hover:underline">
-              View All
-            </Link>
-          </div>
-
-          <div className="space-y-2">
-            {stats?.recentFeedbacks?.length === 0 && (
-              <p className="text-xs text-slate-400 italic p-4 bg-slate-950 border border-slate-800 rounded-xl">
-                No user feedback submitted yet.
-              </p>
-            )}
-            {stats?.recentFeedbacks?.map((f) => (
-              <div
-                key={f._id}
-                className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1 text-xs"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-white">{f.user?.name || 'User'}</span>
-                  <div className="flex text-amber-400">
-                    {Array.from({ length: Math.max(0, Math.min(5, toNumber(f.rating))) }).map((_, i) => (
-                      <span key={i}>★</span>
-                    ))}
+          }
+        >
+          {stats?.recentWorkouts?.length === 0 ? (
+            <EmptyState icon={Dumbbell} title="No workouts logged yet" />
+          ) : (
+            <ul className="divide-y divide-slate-800/70">
+              {stats?.recentWorkouts?.map((w) => (
+                <li key={w._id} className="flex items-center justify-between gap-4 px-5 py-3.5">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{w.title}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                      {w.user?.name || 'Athlete'} · {w.category} · {w.duration} min
+                    </p>
                   </div>
-                </div>
-                <p className="text-slate-300 italic text-[11px]">"{f.comments}"</p>
-              </div>
-            ))}
-          </div>
-        </div>
+                  <Badge tone="warning" className="shrink-0 tabular-nums">
+                    {w.caloriesBurned} kcal
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card
+          title="Recent feedback"
+          icon={Star}
+          padded={false}
+          action={
+            <Link to="/admin/feedback" className="text-sm font-medium text-brand-400 hover:text-brand-300">
+              View all
+            </Link>
+          }
+        >
+          {stats?.recentFeedbacks?.length === 0 ? (
+            <EmptyState icon={Star} title="No feedback submitted yet" />
+          ) : (
+            <ul className="divide-y divide-slate-800/70">
+              {stats?.recentFeedbacks?.map((f) => {
+                const rating = Math.max(0, Math.min(5, toNumber(f.rating)));
+                return (
+                  <li key={f._id} className="px-5 py-3.5">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm font-medium text-white truncate">{f.user?.name || 'User'}</span>
+                      <span className="text-sm tracking-tight shrink-0" aria-label={`${rating} out of 5`}>
+                        <span className="text-amber-400">{'★'.repeat(rating)}</span>
+                        <span className="text-slate-700">{'★'.repeat(5 - rating)}</span>
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-slate-400 line-clamp-2">{f.comments}</p>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
       </div>
     </div>
   );

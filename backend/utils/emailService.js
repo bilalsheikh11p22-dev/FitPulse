@@ -1,6 +1,10 @@
 const nodemailer = require('nodemailer');
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+// FRONTEND_URL wins; on Vercel it falls back to the production domain, locally to the Vite dev server.
+const FRONTEND_URL = (
+  process.env.FRONTEND_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:5173')
+).replace(/\/+$/, '');
 const FROM_EMAIL = process.env.EMAIL_FROM || '"FitPulse Team" <no-reply@fitpulse.internal>';
 
 let transporter = null;

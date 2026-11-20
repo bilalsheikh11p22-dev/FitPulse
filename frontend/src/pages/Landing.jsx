@@ -20,10 +20,10 @@ const features = [
 ];
 
 const programs = [
-  { title: 'Strength', tag: 'Build power', img: IMAGES.strength },
-  { title: 'Cardio', tag: 'Boost endurance', img: IMAGES.cardio },
-  { title: 'Mobility & Yoga', tag: 'Move better', img: IMAGES.yoga },
-  { title: 'Nutrition', tag: 'Fuel right', img: IMAGES.nutrition },
+  { slug: 'strength', title: 'Strength', tag: 'Build power', img: IMAGES.strength },
+  { slug: 'cardio', title: 'Cardio', tag: 'Boost endurance', img: IMAGES.cardio },
+  { slug: 'yoga', title: 'Mobility & Yoga', tag: 'Move better', img: IMAGES.yoga },
+  { slug: 'nutrition', title: 'Nutrition', tag: 'Fuel right', img: IMAGES.nutrition },
 ];
 
 const steps = [
@@ -244,17 +244,17 @@ export default function Landing() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {programs.map((p, i) => (
               <Reveal key={p.title} delay={i * 0.09}>
-                <div className="group relative rounded-2xl overflow-hidden aspect-[3/4] img-zoom cursor-pointer">
+                <Link to={`/programs/${p.slug}`} aria-label={`${p.title}: ${p.tag}`} className="group relative block rounded-2xl overflow-hidden aspect-[3/4] img-zoom focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
                   <Img src={p.img} alt={p.title} className="absolute inset-0" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
                   <div className="absolute inset-x-0 bottom-0 p-4 sm:p-6 text-[#fff]">
                     <p className="text-[11px] uppercase tracking-widest text-brand-400 font-bold">{p.tag}</p>
                     <h3 className="mt-1 text-lg sm:text-2xl font-extrabold">{p.title}</h3>
-                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                      Start tracking <ArrowRight className="w-3.5 h-3.5" />
+                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold sm:opacity-0 sm:translate-y-2 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 sm:group-focus-visible:opacity-100 transition-all duration-300">
+                      Learn more <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
-                </div>
+                </Link>
               </Reveal>
             ))}
           </div>

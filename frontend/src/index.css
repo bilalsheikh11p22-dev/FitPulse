@@ -148,6 +148,10 @@ html:not(.dark) {
 main { animation: pageIn .45s ease both; position: relative; z-index: 1; }
 @keyframes pageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
+/* Admin pages: quick, subtle fade when navigating between screens */
+.page-enter { animation: pageEnterAdmin .25s ease both; }
+@keyframes pageEnterAdmin { from { opacity: 0; } to { opacity: 1; } }
+
 /* Gentle entrance for first-level blocks on inner pages */
 .page-stagger > * { animation: pageIn .55s ease both; }
 .page-stagger > *:nth-child(2) { animation-delay: .06s; }

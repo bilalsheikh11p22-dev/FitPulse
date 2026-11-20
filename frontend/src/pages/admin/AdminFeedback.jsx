@@ -3,6 +3,7 @@ import { Star } from 'lucide-react';
 import api from '../../api/api';
 import { toArray, toNumber, getErrorMessage, fmtDate } from '../../utils/normalize';
 import Avatar from '../../components/ui/Avatar';
+import { PageHeader, Card, Badge, Alert, Spinner, EmptyState } from '../../components/admin/ui';
 
 export default function AdminFeedback() {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -26,87 +27,81 @@ export default function AdminFeedback() {
     fetchFeedback();
   }, []);
 
-  const avgRating = feedbacks.length > 0 
-    ? (() => {
-        const sum = feedbacks.reduce((acc, f) => acc + toNumber(f.rating, 0), 0);
-        const avg = sum / feedbacks.length;
-        return Number.isFinite(avg) ? avg.toFixed(1) : null;
-      })()
-    : null;
+  const avgRating =
+    feedbacks.length > 0
+      ? (() => {
+          const sum = feedbacks.reduce((acc, f) => acc + toNumber(f.rating, 0), 0);
+          const avg = sum / feedbacks.length;
+          return Number.isFinite(avg) ? avg.toFixed(1) : null;
+        })()
+      : null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2.5">
-            <Star className="w-6 h-6 text-amber-400 fill-amber-400" />
-            <span>User Feedback & App Store Reviews</span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Audit user sentiment, star ratings, and improvement suggestions.
-          </p>
-        </div>
+    <div>
+      <PageHeader
+        icon={Star}
+        title="Feedback"
+        description="Ratings and comments users have left about FitPulse."
+        actions={
+          <div className="flex items-center gap-3 rounded-lg bg-slate-900 border border-slate-800 px-4 py-2">
+            <span className="text-sm text-slate-400">Average rating</span>
+            <span className="text-lg font-bold text-white tabular-nums">
+              {avgRating ? (
+                <>
+                  {avgRating}
+                  <span className="text-sm font-medium text-slate-500"> / 5</span>
+                </>
+              ) : (
+                '—'
+              )}
+            </span>
+            {avgRating && <Star className="w-4 h-4 text-amber-400 fill-amber-400" />}
+          </div>
+        }
+      />
 
-        <div className="px-4 py-2 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-2 text-xs">
-          <span className="text-slate-400">Average Platform Rating:</span>
-          <span className="text-lg font-black text-amber-400">{avgRating ? `${avgRating} / 5.0 ★` : 'No ratings yet'}</span>
-        </div>
-      </div>
+      <div className="space-y-4">
+        {error && <Alert>{error}</Alert>}
 
-      {error && (
-        <div role="alert" className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
-          {error}
-        </div>
-      )}
-
-      {/* Feedback Grid */}
-      {loading ? (
-        <div className="py-20 text-center">
-          <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-400">Loading reviews...</p>
-        </div>
-      ) : feedbacks.length === 0 ? (
-        <div className="p-12 text-center rounded-2xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
-          No feedback submitted yet.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {feedbacks.map((f) => (
-            <div
-              key={f._id}
-              className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-3 flex flex-col justify-between"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex text-amber-400">
-                    {Array.from({ length: Math.max(0, Math.min(5, toNumber(f.rating))) }).map((_, i) => (
-                      <span key={i}>★</span>
-                    ))}
+        {loading ? (
+          <Spinner label="Loading reviews…" />
+        ) : feedbacks.length === 0 ? (
+          <Card>
+            <EmptyState icon={Star} title="No feedback yet" description="Reviews will appear here once users submit them." />
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {feedbacks.map((f) => {
+              const rating = Math.max(0, Math.min(5, toNumber(f.rating)));
+              return (
+                <article key={f._id} className="rounded-xl bg-slate-900 border border-slate-800 flex flex-col">
+                  <div className="p-5 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-base tracking-tight" aria-label={`${rating} out of 5 stars`}>
+                        <span className="text-amber-400">{'★'.repeat(rating)}</span>
+                        <span className="text-slate-700">{'★'.repeat(5 - rating)}</span>
+                      </span>
+                      <span className="text-xs text-slate-500">{fmtDate(f.createdAt)}</span>
+                    </div>
+                    <p className="mt-3 text-sm text-slate-300 leading-relaxed">{f.comments}</p>
                   </div>
-                  <span className="text-[10px] text-slate-500">
-                    {fmtDate(f.createdAt)}
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-300 italic leading-relaxed">
-                  "{f.comments}"
-                </p>
-              </div>
-
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px]">
-                <div className="flex items-center gap-2">
-                  <Avatar src={f.user?.avatar} name={f.user?.name} size={24} rounded="rounded-full" />
-                  <span className="font-semibold text-white">{f.user?.name || 'User'}</span>
-                </div>
-                <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                  {f.category?.replace('_', ' ')}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                  <div className="px-5 py-3.5 border-t border-slate-800 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <Avatar src={f.user?.avatar} name={f.user?.name} size={28} rounded="rounded-full" />
+                      <span className="text-sm font-medium text-white truncate">{f.user?.name || 'User'}</span>
+                    </div>
+                    {f.category && (
+                      <Badge tone="neutral" className="capitalize shrink-0">
+                        {f.category.replace('_', ' ')}
+                      </Badge>
+                    )}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
