@@ -140,15 +140,6 @@ export default function Navbar() {
 
             {user ? (
               <>
-                {user.role === 'admin' && (
-                  <Link
-                    to="/admin/dashboard"
-                    className="hidden xl:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-500/15 text-red-400 border border-red-500/30 text-xs font-bold hover:bg-red-500/25 transition"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5" /> Admin
-                  </Link>
-                )}
-
                 <Link to="/notifications" className={`relative ${iconBtn}`} title="Notifications" aria-label="Notifications">
                   <Bell className="w-4 h-4" />
                   {unreadCount > 0 && (
@@ -209,9 +200,6 @@ export default function Navbar() {
               </>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
-                <Link to="/admin/login" className="hidden xl:inline-flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-semibold text-red-400 hover:bg-red-500/10 transition border border-red-500/20">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Admin
-                </Link>
                 <Link to="/login" className="px-4 py-2 rounded-xl text-[13px] font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition">
                   Sign In
                 </Link>
@@ -271,17 +259,9 @@ export default function Navbar() {
                   <div className="pt-3 grid grid-cols-2 gap-2">
                     <Link to="/login" className="btn-ghost !py-3"><LogIn className="w-4 h-4" /> Sign In</Link>
                     <Link to="/register" className="btn-primary !py-3"><UserPlus className="w-4 h-4" /> Join Free</Link>
-                    <Link to="/admin/login" className="col-span-2 text-center px-3 py-2.5 rounded-xl text-xs font-semibold text-red-400 border border-red-500/20">
-                      Admin Portal
-                    </Link>
                   </div>
                 ) : (
                   <div className="pt-3 grid grid-cols-2 gap-2">
-                    {user.role === 'admin' && (
-                      <Link to="/admin/dashboard" className="col-span-2 flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-red-500/15 text-red-400 border border-red-500/30 text-xs font-bold hover:bg-red-500/25 transition">
-                        <ShieldCheck className="w-4 h-4" /> Admin Console
-                      </Link>
-                    )}
                     <Link to="/profile" className="btn-ghost !py-3"><User className="w-4 h-4" /> Profile</Link>
                     <button onClick={handleLogout} className="btn-ghost !py-3 !text-red-400 !border-red-500/30"><LogOut className="w-4 h-4" /> Sign Out</button>
                   </div>

@@ -130,7 +130,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-md max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6">
+      <div className="relative w-full max-w-md max-h-[92vh] overflow-y-auto bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
@@ -138,7 +138,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-3.5">
           <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center">
             {mode === 'goal' ? <Target className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
           </div>
@@ -152,11 +152,11 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2.5">
           {mode === 'goal' ? (
             <>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                   Goal Objective *
                 </label>
                 <input
@@ -165,12 +165,12 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                   placeholder="e.g. Bench Press 100kg or Reach 70kg"
                   value={goalData.title}
                   onChange={(e) => setGoalData({ ...goalData, title: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+                  className="w-full px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                   Description
                 </label>
                 <input
@@ -179,19 +179,19 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                   placeholder="Optional details"
                   value={goalData.description}
                   onChange={(e) => setGoalData({ ...goalData, description: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+                  className="w-full px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     Category
                   </label>
                   <select
                     value={goalData.category}
                     onChange={(e) => setGoalData({ ...goalData, category: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
                   >
                     <option value="weight">Body Weight</option>
                     <option value="strength">Strength Lift</option>
@@ -204,7 +204,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     Unit
                   </label>
                   <input
@@ -212,14 +212,14 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                     value={goalData.unit}
                     onChange={(e) => setGoalData({ ...goalData, unit: e.target.value })}
                     placeholder="kg, reps, mins, sessions"
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     Target Value *
                   </label>
                   <input
@@ -229,12 +229,12 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                     required
                     value={goalData.targetValue}
                     onChange={(e) => setGoalData({ ...goalData, targetValue: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-bold"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     {editing ? 'Current Value' : 'Current Starting Value'}
                   </label>
                   <input
@@ -243,45 +243,45 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                     min="0"
                     value={goalData.currentValue}
                     onChange={(e) => setGoalData({ ...goalData, currentValue: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     Start Date
                   </label>
                   <input
                     type="date"
                     value={goalData.startDate}
                     onChange={(e) => setGoalData({ ...goalData, startDate: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     Target Deadline Date
                   </label>
                   <input
                     type="date"
                     value={goalData.deadline}
                     onChange={(e) => setGoalData({ ...goalData, deadline: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
                   />
                 </div>
               </div>
 
               {editing && (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     Status
                   </label>
                   <select
                     value={goalData.status}
                     onChange={(e) => setGoalData({ ...goalData, status: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
                   >
                     <option value="in_progress">In Progress</option>
                     <option value="completed">Completed</option>
@@ -292,7 +292,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
           ) : (
             <>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                   Reminder Title *
                 </label>
                 <input
@@ -301,19 +301,19 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                   placeholder="e.g. Morning Workout or Whey Shake"
                   value={reminderData.title}
                   onChange={(e) => setReminderData({ ...reminderData, title: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
+                  className="w-full px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     Alert Type
                   </label>
                   <select
                     value={reminderData.type}
                     onChange={(e) => setReminderData({ ...reminderData, type: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
                   >
                     <option value="workout">Workout Session</option>
                     <option value="meal">Meal / Nutrition</option>
@@ -326,7 +326,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     Time (24hr)
                   </label>
                   <input
@@ -334,14 +334,14 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                     required
                     value={reminderData.time}
                     onChange={(e) => setReminderData({ ...reminderData, time: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                     Repeat
                   </label>
                   <select
@@ -354,7 +354,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                         days: repeat === 'weekly' ? prev.days.slice(0, 1) : prev.days,
                       }));
                     }}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
                   >
                     <option value="once">One time</option>
                     <option value="daily">Every day</option>
@@ -364,7 +364,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                 </div>
                 {reminderData.repeat === 'once' && (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                       Date
                     </label>
                     <input
@@ -373,7 +373,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                       min={today()}
                       value={reminderData.runDate}
                       onChange={(e) => setReminderData({ ...reminderData, runDate: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                      className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
                     />
                   </div>
                 )}
@@ -407,7 +407,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                   Description (optional)
                 </label>
                 <input
@@ -416,7 +416,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
                   placeholder="e.g. Drink 500ml water and take pre-workout"
                   value={reminderData.notes}
                   onChange={(e) => setReminderData({ ...reminderData, notes: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                  className="w-full px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
                 />
               </div>
             </>
@@ -428,7 +428,7 @@ function GoalModalForm({ onClose, onSave, mode, initialData }) {
             </p>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-2.5 border-t border-slate-800">
             <button
               type="button"
               onClick={onClose}

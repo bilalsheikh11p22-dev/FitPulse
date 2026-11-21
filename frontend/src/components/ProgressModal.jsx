@@ -69,7 +69,7 @@ function ProgressModalForm({ onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
@@ -77,7 +77,7 @@ function ProgressModalForm({ onClose, onSave }) {
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-3.5">
           <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
             <Scale className="w-5 h-5" />
           </div>
@@ -89,7 +89,7 @@ function ProgressModalForm({ onClose, onSave }) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2.5">
           <div>
             <label className="block text-xs font-semibold text-cyan-400 mb-1">
               Current Body Weight (kg) *
@@ -100,7 +100,7 @@ function ProgressModalForm({ onClose, onSave }) {
               required
               value={formData.weight}
               onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-              className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm font-bold focus:outline-none focus:border-cyan-500"
+              className="w-full px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm font-bold focus:outline-none focus:border-cyan-500"
             />
           </div>
 
@@ -231,7 +231,7 @@ function ProgressModalForm({ onClose, onSave }) {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-300 mb-0.5">
               Physique Observation / Notes
             </label>
             <input
@@ -239,7 +239,7 @@ function ProgressModalForm({ onClose, onSave }) {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="e.g. Waist feeling leaner, muscles full and recovered"
-              className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyan-500"
+              className="w-full px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyan-500"
             />
           </div>
 
@@ -249,7 +249,7 @@ function ProgressModalForm({ onClose, onSave }) {
             </p>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-2.5 border-t border-slate-800">
             <button
               type="button"
               onClick={onClose}

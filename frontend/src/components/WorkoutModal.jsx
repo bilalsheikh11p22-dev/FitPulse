@@ -122,7 +122,7 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-5 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
@@ -130,7 +130,7 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-3.5">
           <div className="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center">
             <Dumbbell className="w-5 h-5" />
           </div>
@@ -144,9 +144,9 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2.5">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-300 mb-0.5">
               Workout Title *
             </label>
             <input
@@ -155,19 +155,19 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               placeholder="e.g. Upper Body Hypertrophy or Leg Power"
-              className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500"
+              className="w-full px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-brand-500"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                 Category
               </label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
+                className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
               >
                 <option value="Strength">Strength</option>
                 <option value="Cardio">Cardio</option>
@@ -179,7 +179,7 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                 Duration (mins)
               </label>
               <input
@@ -188,12 +188,12 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
                 max="360"
                 value={formData.duration}
                 onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
+                className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
+              <label className="block text-xs font-semibold text-slate-300 mb-0.5">
                 Est. Calories (kcal)
               </label>
               <input
@@ -201,13 +201,13 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
                 min="10"
                 value={formData.caloriesBurned}
                 onChange={(e) => setFormData({ ...formData, caloriesBurned: Number(e.target.value) })}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
+                className="w-full px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-300 mb-0.5">
               Tags (Comma separated)
             </label>
             <input
@@ -215,12 +215,12 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
               value={formData.tags}
               onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
               placeholder="e.g. Chest, Triceps, Hypertrophy, Heavy"
-              className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
+              className="w-full px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
             />
           </div>
 
           {/* Exercises dynamic table */}
-          <div className="pt-2">
+          <div className="pt-1">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-bold text-brand-400 uppercase tracking-wider">
                 Exercises & Sets
@@ -301,7 +301,7 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
+            <label className="block text-xs font-semibold text-slate-300 mb-0.5">
               Notes / Intensity Observations
             </label>
             <textarea
@@ -309,7 +309,7 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="e.g. Great energy today, rested 90 seconds between compound sets."
-              className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
+              className="w-full px-3.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-brand-500"
             />
           </div>
 
@@ -319,7 +319,7 @@ function WorkoutModalForm({ onClose, onSave, initialData }) {
             </p>
           )}
 
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-2.5 border-t border-slate-800">
             <button
               type="button"
               onClick={onClose}
