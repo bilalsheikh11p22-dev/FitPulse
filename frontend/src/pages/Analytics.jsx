@@ -1,3 +1,4 @@
+import { SectionLoader } from '../components/ui/Loader';
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, 
@@ -147,11 +148,7 @@ export default function Analytics() {
   const loading = result.key !== key; // a request for the current filters is still running
 
   if (loading && !charts && !error) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <SectionLoader label="Crunching your analytics" />;
   }
 
   const rangeLabel = RANGES.find((r) => r.value === range)?.label || '';

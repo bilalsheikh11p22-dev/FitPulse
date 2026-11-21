@@ -8,3 +8,13 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+
+// Fade out the static splash from index.html once React has painted
+requestAnimationFrame(() => {
+  const splash = document.getElementById('fp-splash');
+  if (!splash) return;
+  setTimeout(() => {
+    splash.classList.add('fp-hide');
+    setTimeout(() => splash.remove(), 400);
+  }, 350);
+});

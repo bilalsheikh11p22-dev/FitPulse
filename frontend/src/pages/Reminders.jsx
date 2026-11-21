@@ -1,3 +1,4 @@
+import { InlineLoader } from '../components/ui/Loader';
 import React, { useState, useEffect } from 'react';
 import { 
   Bell, 
@@ -185,10 +186,7 @@ export default function Reminders() {
       )}
 
       {loading && goals.length === 0 && reminders.length === 0 && (
-        <div className="py-10 text-center">
-          <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-xs text-slate-400">Loading goals and reminders...</p>
-        </div>
+        <InlineLoader label="Loading goals and reminders" className="py-10" />
       )}
 
       {/* 1. Goals Section */}

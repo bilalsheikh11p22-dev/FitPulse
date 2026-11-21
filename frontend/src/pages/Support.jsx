@@ -1,3 +1,4 @@
+import { InlineLoader } from '../components/ui/Loader';
 import React, { useState, useEffect } from 'react';
 import { 
   HelpCircle, 
@@ -322,9 +323,8 @@ export default function Support() {
             <h3 className="text-sm font-bold text-white">Your Support Conversations</h3>
 
             {loading ? (
-              <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 text-center">
-                <div className="w-6 h-6 border-4 border-brand-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                <p className="text-xs text-slate-400">Loading your tickets...</p>
+              <div className="rounded-2xl bg-slate-900 border border-slate-800">
+                <InlineLoader label="Loading your tickets" />
               </div>
             ) : tickets.length === 0 ? (
               <p className="text-xs text-slate-400 italic p-6 rounded-2xl bg-slate-900 border border-slate-800">
@@ -500,9 +500,8 @@ export default function Support() {
           <div className="space-y-3">
             <h3 className="text-sm font-bold text-white">Community Ratings & Reviews</h3>
             {loading && (
-              <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 text-center">
-                <div className="w-6 h-6 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                <p className="text-xs text-slate-400">Loading feedback...</p>
+              <div className="rounded-2xl bg-slate-900 border border-slate-800">
+                <InlineLoader label="Loading feedback" />
               </div>
             )}
             {!loading && feedbacks.length === 0 && (
