@@ -240,6 +240,9 @@ function AppLayout() {
         />
 
         {/* Admin Panel Pages (Protected by AdminRoute) */}
+        
+              {/* Admin Panel Pages (Protected by AdminRoute) */}
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route
           path="/admin/dashboard"
           element={
